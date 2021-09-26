@@ -16,7 +16,7 @@ function html(){
 }
 
 function css(){
-    return src('./src/sass/*.sass')
+    return src('./src/*.scss')
         .pipe(sass()) 
         .pipe(autoprefixer({
             browsers: ['last 2 versions'] // 兼容后面两个版本
@@ -25,17 +25,17 @@ function css(){
         .pipe(rename({
             suffix: '.min' // 添加后缀
         }))
-        .pipe(dest('./dist/css'))
+        .pipe(dest('./dist'))
         .pipe(browserSync.stream())
 }
 
 function js(){
-    return src('./src/js/*.js')
+    return src('./src/*.js')
         .pipe(babel({
             presets: ['@babel/preset-env'] // 
         }))
         .pipe( uglify())
-        .pipe(dest('./dist/js'))
+        .pipe(dest('./dist'))
 }
 
 function Delete(){
@@ -43,16 +43,18 @@ function Delete(){
 }
 
 function monitor(){
-    browsers.init({
+    browserSync.init({
         server:'./dist' // 启动一个disk为网站根目录的服务器
     })
-    watch('./src/scss/*.scss',css);
-    watch('./src/js/*.js',js);
+    watch('./src/*.scss',css);
+    watch('./src/*.js',js);
     watch('./src/index.html',html).on('change',browserSync.reload)
 }
 
-exports.js = js;
+exports.exjs = js;
+exports.excss = css;
+exports.exhtml = html;
 exports.Delete = Delete;
 exports.monitor = monitor;
-exports.exploit = parallel(html,css,js,Delete);
+exports.exploit = parallel(html,css,js,monitor);
 exports.production = series(Delete, parallel(html,js,css))
